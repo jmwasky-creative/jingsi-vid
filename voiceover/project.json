@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "width": 1080,
+  "height": 1920,
+  "fps": 15,
+  "cues": [
+    {
+      "id": "intro",
+      "start": 0.566,
+      "end": 12.666,
+      "kind": "intro",
+      "title": "个人 AI 工具",
+      "description": "面向个人使用的 AI 工具，选择正在变多。"
+    },
+    {
+      "id": "accessible",
+      "start": 13.8,
+      "end": 21.266,
+      "kind": "accessible",
+      "title": "普通用户版",
+      "description": "把复杂能力包装成更容易上手的体验。"
+    },
+    {
+      "id": "setup",
+      "start": 21.733,
+      "end": 25.666,
+      "kind": "setup",
+      "title": "技术门槛",
+      "description": "安装 → 配置 → 运行"
+    },
+    {
+      "id": "ready",
+      "start": 28,
+      "end": 32.266,
+      "kind": "ready",
+      "title": "开箱即用",
+      "description": "减少准备步骤，打开后即可开始。"
+    },
+    {
+      "id": "computer",
+      "start": 33.9,
+      "end": 39.466,
+      "kind": "computer",
+      "title": "个人电脑 + 对话",
+      "description": "在个人电脑环境中，通过对话发起操作。"
+    },
+    {
+      "id": "dialogue",
+      "start": 39.933,
+      "end": 43.2,
+      "kind": "dialogue",
+      "title": "说出要做的事",
+      "description": "用对话描述任务，再按需要继续调整。"
+    }
+  ]
+}

@@ -5,3 +5,6 @@ output/*.mp4
 agent-tools/
 terminals/
 __pycache__/
+output/voiceover/
+media/
+inputs/

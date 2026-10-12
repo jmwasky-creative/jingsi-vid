@@ -6,7 +6,9 @@
     "render": "node scripts/render.mjs",
     "stills": "node scripts/render.mjs --stills",
     "preview": "python3 -m http.server 47219 --bind 0.0.0.0",
-    "tts": "python3 scripts/tts.py"
+    "tts": "python3 scripts/tts.py",
+    "voiceover": "node scripts/render-voiceover.mjs",
+    "voiceover:stills": "node scripts/render-voiceover.mjs --stills"
   },
   "repository": {
     "type": "git",
