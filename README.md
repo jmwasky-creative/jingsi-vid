@@ -23,6 +23,16 @@
 
 像素字是 [Fusion Pixel 12px](https://github.com/TakWolf/fusion-pixel-font)（SIL Open Font License，见 `fonts/OFL.txt`）。
 
+## 口播试片
+
+10 秒真人出镜。识别她说的话，包装只留两样东西：从句子里抽出的姓名和学校，以及后面没被这两行用掉的一句字幕。脸和嘴留在画面上，字放在下方空带里。
+
+```bash
+python3 scripts/wrap_talk.py media/interview.webm --start 9.36 --duration 10
+```
+
+成片在 `output/talk-10s.mp4`，不纳入版本库。这一段用的是 Wikimedia Commons 上 Subhashish Panigrahi 拍摄的 Frania Pereira 访谈（CC BY-SA 3.0）。识别结果按模型听到的拼写保留。
+
 ## 本地预览
 
 ```bash

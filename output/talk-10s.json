@@ -1,0 +1,153 @@
+{
+  "facts": {
+    "name": "Frenya Pereira",
+    "name_at": 1.12,
+    "place": "Goa University, Patu",
+    "place_at": 2.4
+  },
+  "lines": [
+    {
+      "start": 4.16,
+      "end": 5.94,
+      "text": "And I've been contributing"
+    },
+    {
+      "start": 5.94,
+      "end": 8.74,
+      "text": "In Wikipedia for two articles,"
+    },
+    {
+      "start": 8.74,
+      "end": 10.4,
+      "text": "That is Bibinka and Golba"
+    }
+  ],
+  "words": [
+    {
+      "start": 0.02,
+      "end": 0.62,
+      "word": "Hi,"
+    },
+    {
+      "start": 0.78,
+      "end": 0.82,
+      "word": "my"
+    },
+    {
+      "start": 0.82,
+      "end": 0.92,
+      "word": "name"
+    },
+    {
+      "start": 0.92,
+      "end": 1.12,
+      "word": "is"
+    },
+    {
+      "start": 1.12,
+      "end": 1.46,
+      "word": "Frenya"
+    },
+    {
+      "start": 1.46,
+      "end": 1.92,
+      "word": "Pereira,"
+    },
+    {
+      "start": 2.02,
+      "end": 2.14,
+      "word": "I'm"
+    },
+    {
+      "start": 2.14,
+      "end": 2.4,
+      "word": "from"
+    },
+    {
+      "start": 2.4,
+      "end": 2.7,
+      "word": "Goa"
+    },
+    {
+      "start": 2.7,
+      "end": 2.96,
+      "word": "University,"
+    },
+    {
+      "start": 3.38,
+      "end": 3.9,
+      "word": "Patu,"
+    },
+    {
+      "start": 4.16,
+      "end": 4.84,
+      "word": "and"
+    },
+    {
+      "start": 4.84,
+      "end": 5.32,
+      "word": "I've"
+    },
+    {
+      "start": 5.32,
+      "end": 5.42,
+      "word": "been"
+    },
+    {
+      "start": 5.42,
+      "end": 5.94,
+      "word": "contributing"
+    },
+    {
+      "start": 5.94,
+      "end": 6.28,
+      "word": "in"
+    },
+    {
+      "start": 6.28,
+      "end": 6.46,
+      "word": "Wikipedia"
+    },
+    {
+      "start": 6.46,
+      "end": 7.18,
+      "word": "for"
+    },
+    {
+      "start": 7.18,
+      "end": 8.02,
+      "word": "two"
+    },
+    {
+      "start": 8.02,
+      "end": 8.44,
+      "word": "articles,"
+    },
+    {
+      "start": 8.74,
+      "end": 8.74,
+      "word": "that"
+    },
+    {
+      "start": 8.74,
+      "end": 8.88,
+      "word": "is"
+    },
+    {
+      "start": 8.88,
+      "end": 9.22,
+      "word": "Bibinka"
+    },
+    {
+      "start": 9.22,
+      "end": 9.66,
+      "word": "and"
+    },
+    {
+      "start": 9.66,
+      "end": 10.0,
+      "word": "Golba"
+    }
+  ],
+  "language": "en"
+}

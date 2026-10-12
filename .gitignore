@@ -1,6 +1,8 @@
 node_modules/
+media/
 output/music.wav
 output/soundtrack.wav
+output/*.wav
 output/*.mp4
 agent-tools/
 terminals/
