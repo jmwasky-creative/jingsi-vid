@@ -170,8 +170,16 @@ function renderCurrentFrame() {
   elements.overlay.contentWindow.renderFrame(time);
   const activeCue = elements.overlay.contentWindow.getActiveCue(time);
   const nextActiveId = activeCue?.id || null;
+  let selectedChanged = false;
+  if (activeCue && selectedCueId !== activeCue.id && !pointerOperation) {
+    selectedCueId = activeCue.id;
+    updateInspector();
+    selectedChanged = true;
+  }
   if (nextActiveId !== activeCueId) {
     activeCueId = nextActiveId;
+    refreshCueStates();
+  } else if (selectedChanged) {
     refreshCueStates();
   }
   updateTransport(time);
