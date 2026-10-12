@@ -3,7 +3,7 @@ import { spawn } from 'node:child_process';
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const FPS = Number(process.env.FPS || 30);
+const FPS = Number(process.env.FPS || 24);
 const CHROME = process.env.CHROME || '/usr/local/bin/google-chrome';
 const stills = process.argv.includes('--stills');
 const out = resolve('output');
@@ -44,7 +44,7 @@ if (stills) {
 
 console.log(`duration ${TL.DUR.toFixed(2)}s, rendering music…`);
 writeFileSync(`${out}/music.wav`, Buffer.from(await page.evaluate(() => window.renderAudio()), 'base64'));
-writeFileSync(`${out}/cover.jpg`, Buffer.from(await frame(TL.cues.find((c) => c.id === 'n5').t + 3), 'base64'));
+writeFileSync(`${out}/cover.jpg`, Buffer.from(await frame(TL.cues.find((c) => c.id === 'p5').t + 2.4), 'base64'));
 
 const inputs = ['-i', `${out}/music.wav`];
 const chains = TL.cues.map((c, i) => {
@@ -59,7 +59,7 @@ const ff = spawn('ffmpeg', [
   '-y', '-loglevel', 'error',
   '-f', 'image2pipe', '-framerate', String(FPS), '-c:v', 'mjpeg', '-i', '-',
   '-i', `${out}/soundtrack.wav`,
-  '-c:v', 'libx264', '-preset', 'slow', '-crf', '26', '-pix_fmt', 'yuv420p',
+  '-c:v', 'libx264', '-preset', 'slow', '-crf', '18', '-pix_fmt', 'yuv420p',
   '-c:a', 'aac', '-b:a', '192k', '-shortest', '-movflags', '+faststart',
   `${out}/jingyesi.mp4`,
 ], { stdio: ['pipe', 'inherit', 'inherit'] });

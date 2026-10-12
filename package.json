@@ -1,7 +1,7 @@
 {
   "name": "jingyesi-poem-video",
   "version": "1.0.0",
-  "description": "《静夜思》古诗动画视频（旁白版）",
+  "description": "《静夜思》16-bit 像素 RPG 竖屏动画",
   "scripts": {
     "render": "node scripts/render.mjs",
     "stills": "node scripts/render.mjs --stills",
