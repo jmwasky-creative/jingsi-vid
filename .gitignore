@@ -4,6 +4,7 @@ output/music.wav
 output/soundtrack.wav
 output/*.wav
 output/*.mp4
+output/frames/
 agent-tools/
 terminals/
 __pycache__/

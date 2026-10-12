@@ -25,10 +25,11 @@
 
 ## 口播试片
 
-10 秒真人出镜。识别她说的话，包装只留两样东西：从句子里抽出的姓名和学校，以及后面没被这两行用掉的一句字幕。脸和嘴留在画面上，字放在下方空带里。
+10 秒真人出镜。口播先拆成一帧一张底图，再按她说出的词，在脸下面的黑带里画解说：名字写出来，学校和地名跟着出现，当前这句往外推，说到 two 时右侧冒出两张卡片，Bibinka 和 Golba 分别写入。
 
 ```bash
 python3 scripts/wrap_talk.py media/interview.webm --start 9.36 --duration 10
+python3 scripts/wrap_frames.py
 ```
 
 成片在 `output/talk-10s.mp4`，不纳入版本库。这一段用的是 Wikimedia Commons 上 Subhashish Panigrahi 拍摄的 Frania Pereira 访谈（CC BY-SA 3.0）。识别结果按模型听到的拼写保留。
