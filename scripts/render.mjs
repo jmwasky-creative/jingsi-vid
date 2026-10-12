@@ -52,14 +52,14 @@ const chains = TL.cues.map((c, i) => {
   const ms = Math.round(c.t * 1000);
   return `[${i + 1}:a]aresample=44100,pan=stereo|c0=c0|c1=c0,adelay=${ms}|${ms},volume=1.15[v${i}]`;
 });
-const mix = `${chains.join(';')};[0:a]${TL.cues.map((_, i) => `[v${i}]`).join('')}amix=inputs=${TL.cues.length + 1}:normalize=0:duration=first,alimiter=limit=0.95[a]`;
+const mix = `${chains.join(';')};[0:a]${TL.cues.map((_, i) => `[v${i}]`).join('')}amix=inputs=${TL.cues.length + 1}:normalize=0:duration=first,alimiter=limit=0.85[a]`;
 await run(['-y', '-loglevel', 'error', ...inputs, '-filter_complex', mix, '-map', '[a]', `${out}/soundtrack.wav`]);
 
 const ff = spawn('ffmpeg', [
   '-y', '-loglevel', 'error',
   '-f', 'image2pipe', '-framerate', String(FPS), '-c:v', 'mjpeg', '-i', '-',
   '-i', `${out}/soundtrack.wav`,
-  '-c:v', 'libx264', '-preset', 'slow', '-crf', '19', '-pix_fmt', 'yuv420p',
+  '-c:v', 'libx264', '-preset', 'slow', '-crf', '26', '-pix_fmt', 'yuv420p',
   '-c:a', 'aac', '-b:a', '192k', '-shortest', '-movflags', '+faststart',
   `${out}/jingyesi.mp4`,
 ], { stdio: ['pipe', 'inherit', 'inherit'] });
