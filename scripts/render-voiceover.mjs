@@ -11,6 +11,7 @@ import {
 } from 'node:fs';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { validateLayout } from '../voiceover/layout.js';
 
 const ROOT = process.cwd();
 const WIDTH = 1080;
@@ -101,6 +102,7 @@ function validateProject(project) {
     if (typeof cue.id !== 'string' || cue.id.trim() === '') throw new Error(`${label}.id is required`);
     if (ids.has(cue.id)) throw new Error(`Duplicate cue id: ${cue.id}`);
     ids.add(cue.id);
+    validateLayout(cue.layout);
     assertFiniteNumber(cue.start, `${label}.start`);
     assertFiniteNumber(cue.end, `${label}.end`);
     if (cue.start < 0 || cue.end <= cue.start) {

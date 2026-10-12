@@ -8,7 +8,8 @@
     "preview": "python3 -m http.server 47219 --bind 0.0.0.0",
     "tts": "python3 scripts/tts.py",
     "voiceover": "node scripts/render-voiceover.mjs",
-    "voiceover:stills": "node scripts/render-voiceover.mjs --stills"
+    "voiceover:stills": "node scripts/render-voiceover.mjs --stills",
+    "voiceover:edit": "node scripts/preview-voiceover.mjs"
   },
   "repository": {
     "type": "git",

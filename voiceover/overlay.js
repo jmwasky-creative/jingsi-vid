@@ -1,3 +1,5 @@
+import { getCueLayout } from './layout.js';
+
 (() => {
   "use strict";
 
@@ -214,7 +216,10 @@
 
     ctx.save();
     ctx.globalAlpha = motion.alpha;
-    ctx.translate(0, motion.offsetY);
+    const layout = getCueLayout(cue);
+    ctx.translate(layout.x, layout.y + motion.offsetY * layout.scale);
+    ctx.scale(layout.scale, layout.scale);
+    ctx.translate(-PANEL.x, -PANEL.y);
 
     ctx.shadowColor = "rgba(0, 0, 0, 0.3)";
     ctx.shadowBlur = 28;
@@ -280,6 +285,7 @@
         kind: VALID_KINDS.has(cue.kind) ? cue.kind : "dialogue",
         title: String(cue.title ?? ""),
         description: String(cue.description ?? ""),
+        layout: getCueLayout(cue),
       };
     });
 

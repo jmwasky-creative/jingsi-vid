@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>旁白卡片位置编辑器</title>
+    <link rel="stylesheet" href="/voiceover/editor.css" />
+  </head>
+  <body>
+    <main class="editor-shell">
+      <section class="preview-pane" aria-label="视频预览">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">VOICEOVER LAYOUT</p>
+            <h1>旁白卡片位置编辑器</h1>
+          </div>
+          <div class="source-meta">
+            <span class="status-dot" aria-hidden="true"></span>
+            <span id="sourceName">正在连接本地视频…</span>
+          </div>
+        </header>
+
+        <div class="stage-wrap">
+          <div id="stage" class="stage">
+            <video id="video" playsinline preload="metadata" src="/api/video"></video>
+            <iframe
+              id="overlay"
+              title="旁白卡片叠加层"
+              src="/voiceover/overlay.html?render"
+              tabindex="-1"
+            ></iframe>
+            <div id="selection" class="selection" hidden>
+              <span class="selection-label">拖动卡片</span>
+              <button id="resizeHandle" class="resize-handle" type="button" aria-label="等比缩放卡片"></button>
+            </div>
+            <div id="stageMessage" class="stage-message">正在载入预览…</div>
+          </div>
+        </div>
+
+        <div class="transport">
+          <button id="playButton" class="icon-button" type="button" disabled aria-label="播放">▶</button>
+          <span id="currentTime" class="timecode">00:00.000</span>
+          <input id="timeSlider" class="time-slider" type="range" min="0" max="1" step="0.001" value="0" disabled aria-label="视频时间" />
+          <span id="duration" class="timecode muted">00:00.000</span>
+        </div>
+        <p id="subtitle" class="subtitle" aria-live="polite"></p>
+      </section>
+
+      <aside class="sidebar">
+        <section class="sidebar-section cue-section">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">CUES</p>
+              <h2>卡片列表</h2>
+            </div>
+            <span id="cueCount" class="count-badge">0</span>
+          </div>
+          <div id="cueList" class="cue-list" role="listbox" aria-label="旁白卡片"></div>
+        </section>
+
+        <section class="sidebar-section inspector">
+          <div class="section-heading compact">
+            <div>
+              <p class="eyebrow">POSITION</p>
+              <h2 id="selectedCueTitle">选择一张卡片</h2>
+            </div>
+            <button id="resetButton" class="text-button" type="button" disabled>重置</button>
+          </div>
+
+          <div class="field-grid">
+            <label class="field">
+              <span>X</span>
+              <input id="xInput" type="number" step="1" min="0" disabled />
+            </label>
+            <label class="field">
+              <span>Y</span>
+              <input id="yInput" type="number" step="1" min="0" disabled />
+            </label>
+          </div>
+
+          <label class="scale-field">
+            <span class="field-label">
+              <span>等比缩放</span>
+              <output id="scaleOutput">100%</output>
+            </span>
+            <input id="scaleInput" type="range" min="0.35" max="1.1" step="0.01" value="1" disabled />
+          </label>
+
+          <button id="applyAllButton" class="secondary-button" type="button" disabled>将当前布局应用到全部卡片</button>
+          <p class="hint">拖动卡片调整位置，拖动右下角调整大小。方向键微调 1px，按住 Shift 微调 10px。</p>
+        </section>
+
+        <section class="sidebar-section actions">
+          <div id="saveStatus" class="save-status" role="status" aria-live="polite">尚未修改</div>
+          <button id="saveButton" class="primary-button" type="button" disabled>保存到 project.json</button>
+          <button id="exportButton" class="secondary-button" type="button" disabled>导出项目 JSON</button>
+        </section>
+      </aside>
+    </main>
+
+    <script type="module" src="/voiceover/editor.js"></script>
+  </body>
+</html>
