@@ -1,11 +1,12 @@
 {
   "name": "jingyesi-poem-video",
   "version": "1.0.0",
-  "description": "《静夜思》古诗动画视频",
+  "description": "《静夜思》古诗动画视频（旁白版）",
   "scripts": {
     "render": "node scripts/render.mjs",
     "stills": "node scripts/render.mjs --stills",
-    "preview": "python3 -m http.server 47219 --bind 0.0.0.0"
+    "preview": "python3 -m http.server 47219 --bind 0.0.0.0",
+    "tts": "python3 scripts/tts.py"
   },
   "repository": {
     "type": "git",
