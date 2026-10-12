@@ -22,7 +22,7 @@ const browser = await puppeteer.launch({
 });
 const page = await browser.newPage();
 page.on('pageerror', (e) => console.error('page error:', e.message));
-await page.setViewport({ width: 1920, height: 1080 });
+await page.setViewport({ width: 1080, height: 1920 });
 await page.goto('file://' + resolve('index.html') + '?render', { waitUntil: 'load' });
 await page.evaluate(() => window.ready);
 const TL = await page.evaluate(() => ({ S: TL.S, cues: TL.cues, DUR: TL.DUR }));

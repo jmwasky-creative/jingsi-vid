@@ -1,6 +1,7 @@
 node_modules/
 output/music.wav
 output/soundtrack.wav
+output/*.mp4
 agent-tools/
 terminals/
 __pycache__/
