@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>静夜思 · 李白 | 古诗动画</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&display=swap">
+<style>
+@font-face{font-family:"Ma Shan Zheng Local";src:url("fonts/MaShanZheng-Regular.ttf")}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%;background:#05070d;color:#e8e2cf;font-family:"PingFang SC","Microsoft YaHei","WenQuanYi Micro Hei",sans-serif}
+body{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:16px}
+#stage{position:relative;width:min(100%,calc((100vh - 90px)*16/9));aspect-ratio:16/9;border-radius:14px;overflow:hidden;box-shadow:0 30px 80px #000c,0 0 0 1px #ffffff14}
+canvas{display:block;width:100%;height:100%}
+#overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:radial-gradient(#05070d55,#05070dcc);transition:opacity .6s}
+#overlay.hide{opacity:0;pointer-events:none}
+button{font:inherit;cursor:pointer;border:1px solid #f3e7c066;background:#f3e7c014;color:#f6eed6;padding:12px 30px;border-radius:999px;font-size:clamp(14px,2.2vw,20px);letter-spacing:.2em;backdrop-filter:blur(6px);transition:background .2s,transform .2s}
+button:hover{background:#f3e7c033;transform:translateY(-1px)}
+button:disabled{opacity:.5;cursor:wait}
+#hint{font-size:clamp(11px,1.5vw,14px);opacity:.7;letter-spacing:.1em}
+#bar{width:min(100%,calc((100vh - 90px)*16/9));height:3px;background:#ffffff14;border-radius:3px;overflow:hidden}
+#prog{height:100%;width:0;background:linear-gradient(90deg,#c9b98a,#f6eed6)}
+footer{font-size:12px;opacity:.5;letter-spacing:.1em}
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="c" width="1920" height="1080"></canvas>
+  <div id="overlay"><button id="play" disabled>字体加载中…</button><div id="hint">建议开启声音 · 时长约 48 秒</div></div>
+</div>
+<div id="bar"><div id="prog"></div></div>
+<footer>《静夜思》 唐 · 李白 —— 古诗动画</footer>
+<script>
+const W=1920,H=1080,DUR=48,HZ=0.70*H;
+const cv=document.getElementById('c'),g=cv.getContext('2d');
+const FONT='"Ma Shan Zheng","Ma Shan Zheng Local","STKaiti","KaiTi","Kaiti SC",serif';
+const SANS='"PingFang SC","Microsoft YaHei","Noto Sans SC","WenQuanYi Micro Hei",sans-serif';
+const TITLE='静夜思',AUTHOR=['唐','','李','白'];
+const LINES=['床前明月光','疑是地上霜','举头望明月','低头思故乡'];
+const GLOSS=['明亮的月光洒在床前','恍惚间，以为地上结了一层白霜','抬起头来，望着天上那一轮明月','低下头，不由得思念起远方的故乡'];
+const L0=6,LL=8,CH0=0.6,CHD=0.42;
+
+function rng(s){return()=>{s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const ss=(a,b,t)=>{t=Math.min(1,Math.max(0,(t-a)/(b-a)));return t*t*(3-2*t)};
+const R=rng(7);
+const stars=Array.from({length:280},()=>({x:R()*W,y:R()*HZ*1.25-H*0.3,r:R()*1.7+0.4,p:R()*6.28,s:R()*2+0.4}));
+const motes=Array.from({length:60},()=>({x:R()*W,y:R()*H,v:R()*14+6,a:R()*6.28,r:R()*2+0.6}));
+const frost=Array.from({length:240},()=>{const x=R()*W;return{x,y:HZ+30+R()*(H-HZ-30),p:R()*6.28,r:R()*2.2+0.5}});
+const lights=Array.from({length:22},()=>({x:W*(0.5+R()*0.45),y:HZ-4-R()*26,p:R()*6.28,r:R()*2+1.6}));
+const craters=Array.from({length:7},()=>({a:R()*6.28,d:R()*0.6,r:R()*0.18+0.06}));
+const reeds=Array.from({length:26},()=>({x:W*(0.78+R()*0.24),h:80+R()*170,p:R()*6.28,w:R()*1.5+1.5}));
+function ridge(base,amp,seed,oct){const r=rng(seed),ph=[...Array(oct)].map(()=>r()*100),pts=[];for(let i=0;i<=120;i++){const x=i/120;let y=0;for(let o=0;o<oct;o++)y+=Math.sin(x*(2.2+o*3.7)+ph[o])/(o+1)**1.1;pts.push([x*W*1.1-W*0.05,base-amp*(y+1.2)])}return pts}
+const M=[ridge(HZ+6,150,3,5),ridge(HZ+8,95,11,6),ridge(HZ+10,48,23,6)];
+const MC=[['#24345c','#141d36'],['#18233f','#0d1428'],['#0f172d','#080d1c']];
+
+function moonPos(t){const rise=ss(0.3,6,t),up=ss(22,26,t)-ss(30,34,t);return{x:W*0.27,y:H*(0.78-0.56*rise)+up*150,r:78*(1+0.38*up)}}
+function cam(t){return 260*(ss(22,26,t)-ss(30,34,t))}
+
+function sky(t,c){const gr=g.createLinearGradient(0,-c,0,HZ+c);gr.addColorStop(0,'#03050c');gr.addColorStop(0.55,'#0b1330');gr.addColorStop(1,'#26365f');g.fillStyle=gr;g.fillRect(0,0,W,H);
+  for(const s of stars){const a=(0.45+0.55*Math.sin(t*s.s+s.p))*0.9;g.globalAlpha=Math.max(0,a);g.fillStyle='#f4f1ff';g.beginPath();g.arc(s.x,s.y+c*0.55,s.r,0,6.283);g.fill()}g.globalAlpha=1}
+
+function moon(t){const m=moonPos(t),pulse=1+0.04*Math.sin(t*1.3);
+  let gr=g.createRadialGradient(m.x,m.y,m.r*0.8,m.x,m.y,m.r*7*pulse);gr.addColorStop(0,'rgba(255,244,214,.45)');gr.addColorStop(0.25,'rgba(190,205,255,.14)');gr.addColorStop(1,'rgba(120,140,220,0)');g.fillStyle=gr;g.fillRect(0,0,W,H);
+  gr=g.createRadialGradient(m.x-m.r*0.3,m.y-m.r*0.3,m.r*0.1,m.x,m.y,m.r);gr.addColorStop(0,'#fffdf2');gr.addColorStop(1,'#efe2b8');
+  g.save();g.shadowColor='rgba(255,240,200,.9)';g.shadowBlur=60;g.fillStyle=gr;g.beginPath();g.arc(m.x,m.y,m.r,0,6.283);g.fill();g.restore();
+  g.fillStyle='rgba(185,165,125,.07)';for(const k of craters){g.beginPath();g.arc(m.x+Math.cos(k.a)*k.d*m.r,m.y+Math.sin(k.a)*k.d*m.r,k.r*m.r,0,6.283);g.fill()}}
+
+function beams(t){const a=ss(6,9,t)*(1-0.55*ss(14,17,t))*(1-ss(44,47,t));if(a<=0)return;const m=moonPos(t);
+  g.save();g.globalCompositeOperation='lighter';for(let i=0;i<6;i++){const ang=0.55+i*0.16+0.03*Math.sin(t*0.4+i);const len=H*1.4,sp=0.06+0.02*Math.sin(t*0.7+i*2);
+    const gr=g.createLinearGradient(m.x,m.y,m.x+Math.cos(ang)*len,m.y+Math.sin(ang)*len);gr.addColorStop(0,`rgba(255,240,205,${0.06*a})`);gr.addColorStop(1,'rgba(255,240,205,0)');g.fillStyle=gr;
+    g.beginPath();g.moveTo(m.x,m.y);g.lineTo(m.x+Math.cos(ang-sp)*len,m.y+Math.sin(ang-sp)*len);g.lineTo(m.x+Math.cos(ang+sp)*len,m.y+Math.sin(ang+sp)*len);g.fill()}g.restore()}
+
+function mountains(t,c){M.forEach((pts,i)=>{const off=c*(0.75+i*0.12);const gr=g.createLinearGradient(0,HZ-200+off,0,HZ+off);gr.addColorStop(0,MC[i][0]);gr.addColorStop(1,MC[i][1]);g.fillStyle=gr;g.beginPath();g.moveTo(pts[0][0],H+off);for(const p of pts)g.lineTo(p[0],p[1]+off);g.lineTo(pts[pts.length-1][0],H+off);g.fill();
+  if(i<2){for(let k=0;k<3;k++){const x=((k*700+t*(18+i*10))%(W+900))-450,y=HZ-40-i*30+off+k*8;const mg=g.createRadialGradient(x,y,10,x,y,420);mg.addColorStop(0,'rgba(170,185,230,.10)');mg.addColorStop(1,'rgba(170,185,230,0)');g.fillStyle=mg;g.save();g.translate(x,y);g.scale(1,0.18);g.translate(-x,-y);g.beginPath();g.arc(x,y,420,0,6.283);g.fill();g.restore()}}})}
+
+function village(t,c){const a=ss(30,34,t)*(1-ss(45,48,t));if(a<=0)return;g.save();g.globalCompositeOperation='lighter';for(const l of lights){const f=0.7+0.3*Math.sin(t*3+l.p);const y=l.y+c*0.99;const gr=g.createRadialGradient(l.x,y,0,l.x,y,l.r*7);gr.addColorStop(0,`rgba(255,190,110,${a*f})`);gr.addColorStop(1,'rgba(255,150,60,0)');g.fillStyle=gr;g.beginPath();g.arc(l.x,y,l.r*7,0,6.283);g.fill()}g.restore()}
+
+function water(t,c){const y0=HZ+8+c;const gr=g.createLinearGradient(0,y0,0,H);gr.addColorStop(0,'#1c2a4f');gr.addColorStop(1,'#060a16');g.fillStyle=gr;g.fillRect(0,y0,W,H-y0+2);
+  const m=moonPos(t);g.save();g.globalCompositeOperation='lighter';for(let y=y0+4;y<H;y+=7){const d=(y-y0)/(H-y0);const w=(m.r*1.6+d*220)*(0.55+0.45*Math.sin(t*1.7+y*0.09));const a=0.32*(1-d*0.8);g.fillStyle=`rgba(255,240,200,${a})`;g.fillRect(m.x-w/2+18*Math.sin(t*1.1+y*0.05),y,w,2.2)}g.restore()}
+
+function shore(t,c){const off=c*1.12;g.fillStyle='#04070f';g.beginPath();g.moveTo(-10,H+off);g.lineTo(-10,H*0.80+off);g.bezierCurveTo(W*0.12,H*0.77+off,W*0.22,H*0.82+off,W*0.42,H*0.90+off);g.bezierCurveTo(W*0.52,H*0.94+off,W*0.58,H*0.97+off,W*0.62,H+off);g.fill();
+  const hx=W*0.12,hy=H*0.79+off,warm=ss(30,34,t)*(1-ss(45,48,t));
+  if(warm>0){const gr=g.createRadialGradient(hx+60,hy-55,0,hx+60,hy-55,260);gr.addColorStop(0,`rgba(255,180,90,${0.35*warm})`);gr.addColorStop(1,'rgba(255,160,60,0)');g.fillStyle=gr;g.fillRect(hx-250,hy-320,620,520)}
+  g.fillStyle='#03050b';g.fillRect(hx,hy-95,130,100);g.beginPath();g.moveTo(hx-40,hy-92);g.quadraticCurveTo(hx+65,hy-118,hx+170,hy-92);g.lineTo(hx+140,hy-150);g.quadraticCurveTo(hx+65,hy-162,hx-10,hy-150);g.closePath();g.fill();
+  g.fillStyle=`rgb(${40+215*warm},${45+140*warm},${70+10*warm})`;g.fillRect(hx+42,hy-70,40,36);g.fillStyle='#03050b';g.fillRect(hx+60,hy-70,3,36);g.fillRect(hx+42,hy-53,40,3);
+  g.strokeStyle='#03050b';g.lineCap='round';for(const r of reeds){const sw=Math.sin(t*1.2+r.p)*14;g.lineWidth=r.w;g.beginPath();g.moveTo(r.x,H+5+off);g.quadraticCurveTo(r.x+sw*0.3,H-r.h*0.5+off,r.x+sw,H-r.h+off);g.stroke()}}
+
+function frostFx(t,c){const a=ss(14,18,t)*(1-0.7*ss(22,25,t))*(1-ss(44,47,t));if(a<=0)return;const off=c*1.1;
+  g.save();g.globalCompositeOperation='lighter';const gr=g.createLinearGradient(0,HZ+off,0,H+off);gr.addColorStop(0,'rgba(200,220,255,0)');gr.addColorStop(1,`rgba(200,220,255,${0.22*a})`);g.fillStyle=gr;g.fillRect(0,HZ+off,W,H);
+  for(const f of frost){const tw=Math.max(0,Math.sin(t*2.4+f.p));const al=a*tw*tw;if(al<0.02)continue;g.fillStyle=`rgba(235,245,255,${al})`;g.beginPath();g.arc(f.x,f.y+off,f.r,0,6.283);g.fill();if(f.r>1.8){g.fillRect(f.x-f.r*4,f.y+off-0.6,f.r*8,1.2);g.fillRect(f.x-0.6,f.y+off-f.r*4,1.2,f.r*8)}}g.restore()}
+
+function moteFx(t){g.save();g.globalCompositeOperation='lighter';for(const m of motes){const y=(m.y+t*m.v)%H,x=m.x+Math.sin(t*0.5+m.a)*30;g.fillStyle=`rgba(255,245,220,${0.25+0.2*Math.sin(t+m.a)})`;g.beginPath();g.arc(x,y,m.r,0,6.283);g.fill()}g.restore()}
+
+function glyph(ch,x,y,size,alpha,blur,scale){if(alpha<=0.005||!ch)return;g.save();g.globalAlpha=alpha;g.translate(x,y);g.scale(scale,scale);if(blur>0.3)g.filter=`blur(${blur}px)`;g.font=`${size}px ${FONT}`;g.textAlign='center';g.textBaseline='middle';g.shadowColor='rgba(170,195,255,.85)';g.shadowBlur=size*0.35;g.fillStyle='#f8f3e2';g.fillText(ch,0,0);g.restore()}
+function ink(t,at){const p=ss(at,at+0.6,t);return{a:p,b:(1-p)*14,s:1+(1-p)*0.28}}
+
+function text(t){const out=1-ss(45,47.5,t),top=H*0.17,colX=[W*0.86,W*0.80,W*0.70,W*0.60,W*0.50,W*0.40];
+  TITLE.split('').forEach((ch,i)=>{const k=ink(t,1.5+i*0.5);const dim=1-0.25*ss(6,7,t);glyph(ch,colX[0],top+70+i*150,128,k.a*dim*out,k.b,k.s)});
+  AUTHOR.forEach((ch,i)=>{const k=ink(t,3.4+i*0.3);glyph(ch,colX[1],top+260+i*62,48,k.a*0.85*out,k.b,k.s)});
+  LINES.forEach((ln,j)=>{const st=L0+j*LL;const dim=j<3?1-0.4*ss(st+LL,st+LL+1,t)+0.35*ss(38,40,t):1;
+    ln.split('').forEach((ch,i)=>{const k=ink(t,st+CH0+i*CHD);glyph(ch,colX[2+j],top+60+i*124,100,k.a*Math.min(1,dim)*out,k.b,k.s)})});
+  const sa=ss(39.5,40.1,t)*out;if(sa>0){const sx=W*0.40-46,sy=top+60+4*124+86,sc=1+0.6*(1-ss(39.5,40.1,t));g.save();g.globalAlpha=sa*0.92;g.translate(sx+46,sy+46);g.scale(sc,sc);g.rotate(-0.04);g.fillStyle='#b8261f';g.beginPath();g.roundRect(-46,-46,92,92,10);g.fill();g.strokeStyle='#f3d9c4';g.lineWidth=3;g.strokeRect(-38,-38,76,76);g.fillStyle='#f6e4d2';g.font=`40px ${FONT}`;g.textAlign='center';g.textBaseline='middle';g.fillText('李',0,-17);g.fillText('白',0,19);g.restore()}
+  LINES.forEach((_,j)=>{const st=L0+j*LL;const a=ss(st+3,st+3.8,t)*(1-ss(st+LL-0.6,st+LL,t));if(a<=0)return;g.save();g.globalAlpha=a*0.85;g.font=`34px ${SANS}`;g.textAlign='center';g.fillStyle='#e9e3d0';g.shadowColor='#000';g.shadowBlur=12;g.fillText(GLOSS[j],W/2,H*0.93);g.restore()})}
+
+function renderFrame(t){g.setTransform(1,0,0,1,0,0);g.globalAlpha=1;g.globalCompositeOperation='source-over';g.filter='none';const c=cam(t);
+  sky(t,c);moon(t);beams(t);mountains(t,c);village(t,c);water(t,c);frostFx(t,c);shore(t,c);moteFx(t);
+  const v=g.createRadialGradient(W/2,H/2,H*0.35,W/2,H/2,H*1.05);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(0,0,0,.6)');g.fillStyle=v;g.fillRect(0,0,W,H);
+  text(t);const f=ss(0,2.5,t)*(1-ss(46,48,t));if(f<1){g.fillStyle=`rgba(0,0,0,${1-f})`;g.fillRect(0,0,W,H)}}
+
+const NT={A2:110,D3:146.83,E3:164.81,'F#3':185,A3:220,B3:246.94,D4:293.66,E4:329.63,'F#4':369.99,A4:440,B4:493.88,D5:587.33,E5:659.25};
+function score(){const n=[];const p=(t,k,v=0.5,d=3.2)=>n.push([t,NT[k],v,d]);
+  [[1,'A3'],[1.9,'D4'],[2.8,'E4'],[3.7,'A4'],[4.8,'F#4'],[5.5,'E4']].forEach(x=>p(x[0],x[1],0.4,3.5));
+  const mel=[['A4','B4','A4','F#4','E4'],['F#4','A4','B4','A4','F#4'],['D5','B4','A4','B4','D5'],['B4','A4','F#4','E4','D4']];
+  const bass=['D3','B3','A3','D3'],fill=[['A3','D4','E4'],['B3','D4','F#4'],['E4','A4','B4'],['A3','E4','D4']];
+  mel.forEach((m,j)=>{const st=L0+j*LL;p(st,bass[j],0.45,5);p(st,'A2',0.25,5);m.forEach((k,i)=>p(st+CH0+i*CHD,k,0.55,3));fill[j].forEach((k,i)=>p(st+3.8+i*1.1,k,0.32,3.6))});
+  ['D3','A3','D4','F#4','A4'].forEach((k,i)=>p(38.4+i*0.3,k,0.4,4));['D4','A4','D5'].forEach(k=>p(41,k,0.4,6));p(43.6,'A4',0.3,4);p(44.8,'E4',0.28,4);p(45.8,'D4',0.3,5);return n}
+
+function buildMusic(ctx,t0){const sr=ctx.sampleRate,master=ctx.createGain();master.gain.value=0.8;const comp=ctx.createDynamicsCompressor();master.connect(comp);comp.connect(ctx.destination);
+  const len=Math.floor(sr*3.8),ir=ctx.createBuffer(2,len,sr),rr=rng(99);for(let ch=0;ch<2;ch++){const d=ir.getChannelData(ch);for(let i=0;i<len;i++)d[i]=(rr()*2-1)*Math.pow(1-i/len,3.2)}
+  const rev=ctx.createConvolver();rev.buffer=ir;const wet=ctx.createGain();wet.gain.value=0.42;rev.connect(wet);wet.connect(master);
+  const bus=ctx.createGain();bus.connect(master);bus.connect(rev);
+  const lp=ctx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=420;const pad=ctx.createGain();pad.gain.setValueAtTime(0,t0);pad.gain.linearRampToValueAtTime(0.07,t0+5);pad.gain.setValueAtTime(0.07,t0+42);pad.gain.linearRampToValueAtTime(0,t0+DUR);lp.connect(pad);pad.connect(bus);
+  [73.42,110,146.83,110.4].forEach(f=>{const o=ctx.createOscillator();o.type='triangle';o.frequency.value=f;o.connect(lp);o.start(t0);o.stop(t0+DUR)});
+  for(const[t,f,v,d]of score()){const s=t0+t,env=ctx.createGain(),flt=ctx.createBiquadFilter();flt.type='lowpass';flt.frequency.setValueAtTime(5200,s);flt.frequency.exponentialRampToValueAtTime(900,s+d*0.6);
+    env.gain.setValueAtTime(0.0001,s);env.gain.exponentialRampToValueAtTime(v*0.32,s+0.006);env.gain.exponentialRampToValueAtTime(v*0.12,s+0.35);env.gain.exponentialRampToValueAtTime(0.0001,s+d);env.connect(flt);flt.connect(bus);
+    [[1,1,'triangle'],[2,0.35,'sine'],[3,0.16,'sine'],[4.02,0.06,'sine']].forEach(([h,a,ty])=>{const o=ctx.createOscillator(),og=ctx.createGain();o.type=ty;o.frequency.setValueAtTime(f*h*1.012,s);o.frequency.exponentialRampToValueAtTime(f*h,s+0.08);og.gain.value=a;o.connect(og);og.connect(env);o.start(s);o.stop(s+d+0.05)})}}
+
+async function renderAudio(){const sr=44100,ctx=new OfflineAudioContext(2,sr*DUR,sr);buildMusic(ctx,0);const b=await ctx.startRendering();
+  const n=b.length,buf=new ArrayBuffer(44+n*4),dv=new DataView(buf),ws=(o,s)=>[...s].forEach((c,i)=>dv.setUint8(o+i,c.charCodeAt(0)));
+  ws(0,'RIFF');dv.setUint32(4,36+n*4,true);ws(8,'WAVE');ws(12,'fmt ');dv.setUint32(16,16,true);dv.setUint16(20,1,true);dv.setUint16(22,2,true);dv.setUint32(24,sr,true);dv.setUint32(28,sr*4,true);dv.setUint16(32,4,true);dv.setUint16(34,16,true);ws(36,'data');dv.setUint32(40,n*4,true);
+  const L=b.getChannelData(0),Rc=b.getChannelData(1);for(let i=0;i<n;i++){dv.setInt16(44+i*4,Math.max(-1,Math.min(1,L[i]))*32767,true);dv.setInt16(46+i*4,Math.max(-1,Math.min(1,Rc[i]))*32767,true)}
+  let s='';const u=new Uint8Array(buf);for(let i=0;i<u.length;i+=0x8000)s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));return btoa(s)}
+
+const ready=(async()=>{try{await Promise.race([Promise.all([document.fonts.load(`100px "Ma Shan Zheng"`,TITLE+LINES.join('')+'唐李白'),document.fonts.load(`100px "Ma Shan Zheng Local"`,'静')]),new Promise(r=>setTimeout(r,4000))])}catch(e){}await document.fonts.ready})();
+window.renderFrame=renderFrame;window.renderAudio=renderAudio;window.ready=ready;
+
+if(!location.search.includes('render')){const ov=document.getElementById('overlay'),btn=document.getElementById('play'),prog=document.getElementById('prog');let ac=null;
+  ready.then(()=>{renderFrame(41);btn.disabled=false;btn.textContent='▶ 播放'});
+  btn.onclick=async()=>{if(ac)ac.close();ac=new AudioContext();await ac.resume();const t0=ac.currentTime+0.15;buildMusic(ac,t0);ov.classList.add('hide');
+    const loop=()=>{const t=ac.currentTime-t0;if(t>=DUR){renderFrame(DUR);prog.style.width='100%';btn.textContent='↻ 重新播放';ov.classList.remove('hide');return}renderFrame(Math.max(0,t));prog.style.width=(Math.max(0,t)/DUR*100)+'%';requestAnimationFrame(loop)};loop()}}
+</script>
+</body>
+</html>

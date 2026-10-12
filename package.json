@@ -1,0 +1,20 @@
+{
+  "name": "jingyesi-poem-video",
+  "version": "1.0.0",
+  "description": "《静夜思》古诗动画视频",
+  "scripts": {
+    "render": "node scripts/render.mjs",
+    "stills": "node scripts/render.mjs --stills",
+    "preview": "python3 -m http.server 47219 --bind 0.0.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://origin.cursor.com/git/ahmed-nasheri/tmp-94f6740202aa0ee4.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "puppeteer-core": "^23.11.1"
+  },
+  "type": "module"
+}
