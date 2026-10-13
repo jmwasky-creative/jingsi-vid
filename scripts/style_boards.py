@@ -5,6 +5,7 @@ Five stills and one GIF. The interview frame stays the base. Type, cards,
 and the incoming vertical picture land in the band under the face.
 """
 
+import json
 import subprocess
 from pathlib import Path
 
@@ -155,6 +156,32 @@ def inflow_frame(base, plate, p, text_n=0):
     return im
 
 
+def blank():
+    return Image.new("RGBA", (W, H), (0, 0, 0, 0))
+
+
+def inflow_text():
+    im = blank()
+    d = ImageDraw.Draw(im)
+    yy = 1360
+    for line, size, color in zip(
+        ["画面流入", "竖图先到位", "字在左侧"],
+        (60, 36, 30),
+        (INK, INK, MUTED),
+    ):
+        d.text((72, yy), line, font=cn(size), fill=color)
+        yy += size + 22
+    return im
+
+
+def pack_sprite(im):
+    bbox = im.getbbox()
+    if not bbox:
+        raise SystemExit("empty sprite")
+    crop = im.crop(bbox)
+    return crop, {"x": bbox[0], "y": bbox[1], "w": crop.size[0], "h": crop.size[1]}
+
+
 def save_rgb(im, path):
     im.convert("RGB").save(path, quality=92)
 
@@ -171,6 +198,81 @@ def main():
     }
     for name, im in stills.items():
         save_rgb(im, OUT / name)
+
+    sprites = OUT / "sprites"
+    sprites.mkdir(exist_ok=True)
+    frame(120).convert("RGB").save(OUT / "base.jpg", quality=86)
+    layers = {
+        "person": [("text", person_board(blank()))],
+        "text": [("text", text_board(blank()))],
+        "inflow": [
+            ("text", inflow_text()),
+            ("picture", picture_card(plate, 430, 560)),
+        ],
+        "points": [("text", points_board(blank()))],
+        "quote": [("text", quote_board(blank()))],
+    }
+    # The portrait card is not full-canvas; place it where the still parks it.
+    card_origin = {"x": 590, "y": 1280}
+    packed = {}
+    for style, items in layers.items():
+        packed[style] = []
+        for layer_id, image in items:
+            if style == "inflow" and layer_id == "picture":
+                image.save(sprites / f"{style}-{layer_id}.png")
+                packed[style].append({"id": layer_id, "src": f"sprites/{style}-{layer_id}.png", **card_origin, "w": image.size[0], "h": image.size[1]})
+                continue
+            crop, box = pack_sprite(image)
+            crop.save(sprites / f"{style}-{layer_id}.png")
+            packed[style].append({"id": layer_id, "src": f"sprites/{style}-{layer_id}.png", **box})
+
+    catalog = {
+        "width": W,
+        "height": H,
+        "styles": [
+            {
+                "id": "person",
+                "name": "人物介绍",
+                "use": "开口报名字的时候用。",
+                "place": "人在上半部。字默认在下沿：先是「人物介绍」，一条短线，再是名字和学校。",
+                "move": "整块字可以拖到画面任何位置。",
+                "layers": packed["person"],
+            },
+            {
+                "id": "text",
+                "name": "文字介绍",
+                "use": "要把一句口播收成标题的时候用。",
+                "place": "人不动。下沿只有一句，分成两行，第二行是青色。",
+                "move": "整句文字可以拖走，不锁在下沿。",
+                "layers": packed["text"],
+            },
+            {
+                "id": "inflow",
+                "name": "画面流入",
+                "use": "说话时要带出一张竖图。",
+                "place": "人留在上面。竖图默认停在右下，说明文字停在左下。",
+                "move": "字和竖图分开拖，互不影响。",
+                "layers": packed["inflow"],
+            },
+            {
+                "id": "points",
+                "name": "要点介绍",
+                "use": "一段话里有三个点的时候用。",
+                "place": "下沿三条横条，左边是编号，右边是这一条在说什么。",
+                "move": "三条作为一块拖动。",
+                "layers": packed["points"],
+            },
+            {
+                "id": "quote",
+                "name": "金句",
+                "use": "要单独放下一个判断的时候用。",
+                "place": "下沿两行大字，第二行青色，下面一行小字说明用途。",
+                "move": "整块金句可以拖到脸上或画面边缘。",
+                "layers": packed["quote"],
+            },
+        ],
+    }
+    (OUT / "layouts.json").write_text(json.dumps(catalog, ensure_ascii=False, indent=2), encoding="utf-8")
 
     tmp = OUT / "gif-frames"
     tmp.mkdir(exist_ok=True)

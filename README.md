@@ -34,7 +34,7 @@ python3 scripts/wrap_frames.py
 
 成片在 `output/talk-10s.mp4`，不纳入版本库。这一段用的是 Wikimedia Commons 上 Subhashish Panigrahi 拍摄的 Frania Pereira 访谈（CC BY-SA 3.0）。识别结果按模型听到的拼写保留。
 
-另外五张是直接画在口播画面上的动效稿：人物、文字、竖图流入、要点、金句。动效例子在 `output/styles/inflow.gif`。
+另外五套动效可以直接在画面上拖：人物、文字、竖图流入、要点、金句。打开 `output/styles/index.html`，按住文字拖到新位置。动效例子在 `output/styles/inflow.gif`。
 
 ```bash
 python3 scripts/style_boards.py

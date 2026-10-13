@@ -3,48 +3,235 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>口播动效 · 五场景</title>
+  <title>口播动效 · 拖动文字</title>
   <style>
     :root { color-scheme: dark; }
-    body { margin: 0; background: #07090c; color: #f4f6f8; font: 16px/1.5 "PingFang SC", "Noto Sans SC", sans-serif; }
-    main { max-width: 920px; margin: 0 auto; padding: 32px 20px 80px; }
-    h1 { font-size: 28px; font-weight: 600; margin: 0 0 8px; }
-    p { color: #a8b0b8; margin: 0 0 28px; }
-    figure { margin: 0 0 36px; }
-    img, video { width: min(420px, 100%); border-radius: 16px; display: block; background: #111; }
-    figcaption { margin-top: 10px; }
-    strong { font-weight: 600; }
-    span { color: #a8b0b8; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #07090c;
+      color: #f4f6f8;
+      font: 16px/1.55 "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+    }
+    main {
+      display: grid;
+      grid-template-columns: minmax(280px, 420px) minmax(280px, 460px);
+      gap: 28px;
+      align-items: start;
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 28px 20px 64px;
+    }
+    h1 { font-size: 28px; line-height: 1.25; margin: 0 0 8px; font-weight: 600; }
+    .lead { color: #a8b0b8; margin: 0 0 18px; }
+    .styles { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+    .styles button {
+      text-align: left;
+      background: #12161c;
+      color: inherit;
+      border: 1px solid #2a313a;
+      border-radius: 12px;
+      padding: 12px 14px;
+      cursor: pointer;
+    }
+    .styles button strong { display: block; font-size: 16px; }
+    .styles button span { color: #a8b0b8; font-size: 13px; }
+    .styles button[aria-pressed="true"] { border-color: #7dffc3; }
+    .copy p { margin: 0 0 10px; }
+    .copy b { font-weight: 600; }
+    .meta { color: #a8b0b8; font-variant-numeric: tabular-nums; }
+    .row { display: flex; gap: 10px; align-items: center; margin-top: 14px; }
+    button.reset {
+      background: transparent;
+      color: #f4f6f8;
+      border: 1px solid #3a424c;
+      border-radius: 999px;
+      padding: 8px 14px;
+      cursor: pointer;
+    }
+    a { color: #7dffc3; }
+    .stage-wrap { position: sticky; top: 16px; }
+    .stage {
+      position: relative;
+      width: min(420px, 100%);
+      aspect-ratio: 9 / 16;
+      background: #000;
+      border-radius: 18px;
+      overflow: hidden;
+      touch-action: none;
+      user-select: none;
+    }
+    .stage .base { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .layer {
+      position: absolute;
+      cursor: grab;
+      touch-action: none;
+    }
+    .layer img { width: 100%; height: auto; display: block; pointer-events: none; }
+    .layer.selected { outline: 1px solid rgba(125, 255, 195, 0.9); outline-offset: 3px; }
+    .layer.dragging { cursor: grabbing; }
+    @media (max-width: 800px) {
+      main { grid-template-columns: 1fr; }
+      .stage-wrap { position: static; }
+      .stage { margin: 0 auto; }
+    }
   </style>
 </head>
 <body>
   <main>
-    <h1>基于口播画面的动效</h1>
-    <p>人保持在视频上半部。字、要点和竖图都进到下沿。动效例子是真人连续帧，不是定格。</p>
-    <figure>
-      <img src="inflow.gif" alt="竖图从下方流入，文字随后出现">
-      <figcaption><strong>动效</strong> <span>口播下沿空出，竖图从下面升上来，字落在左侧。</span></figcaption>
-    </figure>
-    <figure>
-      <img src="01-person.png" alt="人物介绍">
-      <figcaption><strong>01 人物介绍</strong> <span>名字，再跟学校。</span></figcaption>
-    </figure>
-    <figure>
-      <img src="02-text.png" alt="文字介绍">
-      <figcaption><strong>02 文字介绍</strong> <span>一句大字，关键词用青色。</span></figcaption>
-    </figure>
-    <figure>
-      <img src="03-inflow.png" alt="画面流入">
-      <figcaption><strong>03 画面流入</strong> <span>竖图停在右下，字停在左下。</span></figcaption>
-    </figure>
-    <figure>
-      <img src="04-points.png" alt="要点介绍">
-      <figcaption><strong>04 要点介绍</strong> <span>三条，编号在前。</span></figcaption>
-    </figure>
-    <figure>
-      <img src="05-quote.png" alt="金句">
-      <figcaption><strong>05 金句</strong> <span>两行，第二行用青色。</span></figcaption>
-    </figure>
+    <section>
+      <h1>特效文字可以拖</h1>
+      <p class="lead">按住文字拖到竖屏里的任意位置，包括脸上。松手后，位置记在这台浏览器里。</p>
+      <div class="styles" id="styles"></div>
+      <div class="copy" id="copy"></div>
+      <p class="meta" id="meta"></p>
+      <div class="row">
+        <button class="reset" id="reset" type="button">回到默认位置</button>
+        <a href="inflow.gif">看流入动效</a>
+      </div>
+    </section>
+    <div class="stage-wrap">
+      <div class="stage" id="stage">
+        <img class="base" src="base.jpg" alt="口播画面">
+      </div>
+    </div>
   </main>
+  <script>
+    const stage = document.querySelector("#stage");
+    const stylesEl = document.querySelector("#styles");
+    const copyEl = document.querySelector("#copy");
+    const metaEl = document.querySelector("#meta");
+    const KEY = "koubo-style-move-v1";
+    let catalog = null;
+    let current = "person";
+    let selected = null;
+    let drag = null;
+
+    function saved() {
+      try { return JSON.parse(localStorage.getItem(KEY) || "{}"); }
+      catch { return {}; }
+    }
+    function write(data) { localStorage.setItem(KEY, JSON.stringify(data)); }
+    function styleById(id) { return catalog.styles.find((item) => item.id === id); }
+    function scale() { return stage.clientWidth / catalog.width; }
+    function placeOf(style, layer) {
+      const memory = saved()[style.id]?.[layer.id];
+      return memory || { x: layer.x, y: layer.y };
+    }
+    function clamp(style, layer, x, y) {
+      const minX = 40 - layer.w;
+      const minY = 40 - layer.h;
+      const maxX = catalog.width - 40;
+      const maxY = catalog.height - 40;
+      return {
+        x: Math.round(Math.min(maxX, Math.max(minX, x))),
+        y: Math.round(Math.min(maxY, Math.max(minY, y))),
+      };
+    }
+    function paint() {
+      const style = styleById(current);
+      const s = scale();
+      for (const layer of style.layers) {
+        const node = stage.querySelector(`[data-id="${layer.id}"]`);
+        const pos = placeOf(style, layer);
+        node.style.left = `${pos.x * s}px`;
+        node.style.top = `${pos.y * s}px`;
+        node.style.width = `${layer.w * s}px`;
+      }
+      const active = style.layers.find((layer) => layer.id === selected) || style.layers[0];
+      const pos = placeOf(style, active);
+      metaEl.textContent = `${active.id === "picture" ? "竖图" : "文字"}  X ${pos.x}   Y ${pos.y}`;
+    }
+    function renderCopy(style) {
+      copyEl.innerHTML = `<p><b>什么时候用。</b>${style.use}</p><p><b>字放在哪。</b>${style.place}</p><p><b>怎么动。</b>${style.move}</p>`;
+    }
+    function show(id) {
+      current = id;
+      selected = styleById(id).layers[0].id;
+      stage.querySelectorAll(".layer").forEach((node) => node.remove());
+      const style = styleById(id);
+      for (const layer of style.layers) {
+        const node = document.createElement("div");
+        node.className = "layer" + (layer.id === selected ? " selected" : "");
+        node.dataset.id = layer.id;
+        const img = document.createElement("img");
+        img.src = layer.src;
+        img.alt = layer.id === "picture" ? "竖图" : style.name;
+        node.append(img);
+        node.addEventListener("pointerdown", (event) => startDrag(event, layer.id));
+        stage.append(node);
+      }
+      for (const button of stylesEl.querySelectorAll("button")) {
+        button.setAttribute("aria-pressed", String(button.dataset.id === id));
+      }
+      renderCopy(style);
+      paint();
+    }
+    function startDrag(event, id) {
+      const style = styleById(current);
+      const layer = style.layers.find((item) => item.id === id);
+      const pos = placeOf(style, layer);
+      selected = id;
+      drag = { id, x: pos.x, y: pos.y, px: event.clientX, py: event.clientY };
+      event.currentTarget.setPointerCapture(event.pointerId);
+      stage.querySelectorAll(".layer").forEach((node) => {
+        node.classList.toggle("selected", node.dataset.id === id);
+        node.classList.toggle("dragging", node.dataset.id === id);
+      });
+      event.preventDefault();
+    }
+    window.addEventListener("pointermove", (event) => {
+      if (!drag) return;
+      const style = styleById(current);
+      const layer = style.layers.find((item) => item.id === drag.id);
+      const next = clamp(style, layer,
+        drag.x + (event.clientX - drag.px) / scale(),
+        drag.y + (event.clientY - drag.py) / scale());
+      const data = saved();
+      data[current] = data[current] || {};
+      data[current][drag.id] = next;
+      write(data);
+      paint();
+    });
+    window.addEventListener("pointerup", () => {
+      drag = null;
+      stage.querySelectorAll(".layer").forEach((node) => node.classList.remove("dragging"));
+    });
+    window.addEventListener("keydown", (event) => {
+      if (!selected) return;
+      const step = event.shiftKey ? 10 : 1;
+      const move = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] }[event.key];
+      if (!move) return;
+      const style = styleById(current);
+      const layer = style.layers.find((item) => item.id === selected);
+      const pos = placeOf(style, layer);
+      const data = saved();
+      data[current] = data[current] || {};
+      data[current][selected] = clamp(style, layer, pos.x + move[0], pos.y + move[1]);
+      write(data);
+      paint();
+      event.preventDefault();
+    });
+    document.querySelector("#reset").addEventListener("click", () => {
+      const data = saved();
+      delete data[current];
+      write(data);
+      paint();
+    });
+    window.addEventListener("resize", () => { if (catalog) paint(); });
+
+    fetch("layouts.json").then((res) => res.json()).then((data) => {
+      catalog = data;
+      for (const style of data.styles) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.dataset.id = style.id;
+        button.innerHTML = `<strong>${style.name}</strong><span>${style.use}</span>`;
+        button.addEventListener("click", () => show(style.id));
+        stylesEl.append(button);
+      }
+      show("person");
+    });
+  </script>
 </body>
 </html>
