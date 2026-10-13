@@ -6,6 +6,7 @@ output/*.wav
 output/*.mp4
 output/frames/
 output/styles/gif-frames/
+output/styles/density-frames/
 agent-tools/
 terminals/
 __pycache__/

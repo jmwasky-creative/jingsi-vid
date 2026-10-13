@@ -80,14 +80,14 @@
 <body>
   <main>
     <section>
-      <h1>特效文字可以拖</h1>
-      <p class="lead">按住文字拖到竖屏里的任意位置，包括脸上。松手后，位置记在这台浏览器里。</p>
+      <h1>把稿里的信息列出来</h1>
+      <p class="lead">口播稿里一句带过、画面上看不见的信息，逐条列在画面上，补上信息密度。每条都可以单独拖。松手后的位置记在这台浏览器里。</p>
       <div class="styles" id="styles"></div>
       <div class="copy" id="copy"></div>
       <p class="meta" id="meta"></p>
       <div class="row">
         <button class="reset" id="reset" type="button">回到默认位置</button>
-        <a href="inflow.gif">看流入动效</a>
+        <a href="density.gif">看信息逐条出现</a>
       </div>
     </section>
     <div class="stage-wrap">
@@ -140,7 +140,7 @@
       }
       const active = style.layers.find((layer) => layer.id === selected) || style.layers[0];
       const pos = placeOf(style, active);
-      metaEl.textContent = `${active.id === "picture" ? "竖图" : "文字"}  X ${pos.x}   Y ${pos.y}`;
+      metaEl.textContent = `${active.name || "文字"}  X ${pos.x}   Y ${pos.y}`;
     }
     function renderCopy(style) {
       copyEl.innerHTML = `<p><b>什么时候用。</b>${style.use}</p><p><b>字放在哪。</b>${style.place}</p><p><b>怎么动。</b>${style.move}</p>`;
@@ -230,7 +230,7 @@
         button.addEventListener("click", () => show(style.id));
         stylesEl.append(button);
       }
-      show("person");
+      show("density");
     });
   </script>
 </body>

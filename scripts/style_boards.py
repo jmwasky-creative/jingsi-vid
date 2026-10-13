@@ -160,6 +160,38 @@ def blank():
     return Image.new("RGBA", (W, H), (0, 0, 0, 0))
 
 
+# Facts pulled out of the spoken line. They are in the script, and absent from the picture.
+FACTS = [
+    {"id": "who", "name": "人物", "value": "Frenya Pereira", "at": 1.12, "x": 48, "y": 1296},
+    {"id": "school", "name": "学校", "value": "Goa University", "at": 2.40, "x": 552, "y": 1296},
+    {"id": "place", "name": "地点", "value": "Patu", "at": 3.38, "x": 48, "y": 1424},
+    {"id": "act", "name": "动作", "value": "正在贡献", "at": 5.42, "x": 552, "y": 1424},
+    {"id": "site", "name": "平台", "value": "Wikipedia", "at": 6.28, "x": 48, "y": 1552},
+    {"id": "count", "name": "数量", "value": "2 篇", "at": 7.18, "x": 552, "y": 1552},
+    {"id": "one", "name": "条目", "value": "Bibinka", "at": 8.88, "x": 48, "y": 1680},
+    {"id": "two", "name": "条目", "value": "Golba", "at": 9.66, "x": 552, "y": 1680},
+]
+
+
+def fact_chip(label, value):
+    w, h = 480, 112
+    im = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    d.rounded_rectangle((0, 0, w - 1, h - 1), radius=18, fill=(8, 10, 14, 226), outline=(255, 255, 255, 42), width=2)
+    d.text((22, 16), label, font=cn(26), fill=MINT)
+    d.text((22, 54), value, font=cn(34), fill=INK)
+    return im
+
+
+def density_board(base, shown=None):
+    im = base.copy()
+    for fact in FACTS:
+        if shown is not None and fact["id"] not in shown:
+            continue
+        blit(im, fact_chip(fact["name"], fact["value"]), (fact["x"], fact["y"]))
+    return im
+
+
 def inflow_text():
     im = blank()
     d = ImageDraw.Draw(im)
@@ -190,6 +222,7 @@ def main():
     OUT.mkdir(parents=True, exist_ok=True)
     plate = Image.open(PLATE_PATH).convert("RGB")
     stills = {
+        "00-density.png": density_board(frame(248)),
         "01-person.png": person_board(frame(90)),
         "02-text.png": text_board(frame(120)),
         "03-inflow.png": inflow_frame(frame(150), plate, 1, text_n=99),
@@ -211,6 +244,10 @@ def main():
         ],
         "points": [("text", points_board(blank()))],
         "quote": [("text", quote_board(blank()))],
+        "density": [
+            (fact["id"], fact_chip(fact["name"], fact["value"]))
+            for fact in FACTS
+        ],
     }
     # The portrait card is not full-canvas; place it where the still parks it.
     card_origin = {"x": 590, "y": 1280}
@@ -220,16 +257,37 @@ def main():
         for layer_id, image in items:
             if style == "inflow" and layer_id == "picture":
                 image.save(sprites / f"{style}-{layer_id}.png")
-                packed[style].append({"id": layer_id, "src": f"sprites/{style}-{layer_id}.png", **card_origin, "w": image.size[0], "h": image.size[1]})
+                packed[style].append({"id": layer_id, "name": "竖图", "src": f"sprites/{style}-{layer_id}.png", **card_origin, "w": image.size[0], "h": image.size[1]})
+                continue
+            if style == "density":
+                fact = next(item for item in FACTS if item["id"] == layer_id)
+                image.save(sprites / f"{style}-{layer_id}.png")
+                packed[style].append({
+                    "id": layer_id,
+                    "name": fact["name"],
+                    "src": f"sprites/{style}-{layer_id}.png",
+                    "x": fact["x"],
+                    "y": fact["y"],
+                    "w": image.size[0],
+                    "h": image.size[1],
+                })
                 continue
             crop, box = pack_sprite(image)
             crop.save(sprites / f"{style}-{layer_id}.png")
-            packed[style].append({"id": layer_id, "src": f"sprites/{style}-{layer_id}.png", **box})
+            packed[style].append({"id": layer_id, "name": "文字", "src": f"sprites/{style}-{layer_id}.png", **box})
 
     catalog = {
         "width": W,
         "height": H,
         "styles": [
+            {
+                "id": "density",
+                "name": "稿里的信息",
+                "use": "把口播稿里一句带过、画面上没有的信息逐条列出来。",
+                "place": "人仍在上面。下沿八条：人物、学校、地点、动作、平台、数量、两个条目。",
+                "move": "每一条单独拖，用来补画面的信息密度。",
+                "layers": packed["density"],
+            },
             {
                 "id": "person",
                 "name": "人物介绍",
@@ -296,7 +354,28 @@ def main():
         "ffmpeg", "-y", "-loglevel", "error", "-framerate", "12", "-i", str(tmp / "%03d.jpg"),
         "-i", str(palette), "-lavfi", "paletteuse=dither=bayer:bayer_scale=3", "-loop", "0", str(gif),
     ], check=True)
-    print(f"wrote {OUT} ({len(seq)} frames)")
+    dense = OUT / "density-frames"
+    dense.mkdir(exist_ok=True)
+    chips = {fact["id"]: fact_chip(fact["name"], fact["value"]) for fact in FACTS}
+    count = 84
+    for i in range(count):
+        t = i / 8
+        shot = frame(min(250, int(t * 25) + 1)).copy()
+        for fact in FACTS:
+            if t + 0.04 >= fact["at"]:
+                blit(shot, chips[fact["id"]], (fact["x"], fact["y"]))
+        shot.resize((540, 960), Image.Resampling.LANCZOS).convert("RGB").save(dense / f"{i:03d}.jpg", quality=86)
+    dense_palette = dense / "palette.png"
+    subprocess.run([
+        "ffmpeg", "-y", "-loglevel", "error", "-framerate", "8", "-i", str(dense / "%03d.jpg"),
+        "-vf", "palettegen=max_colors=128", str(dense_palette),
+    ], check=True)
+    subprocess.run([
+        "ffmpeg", "-y", "-loglevel", "error", "-framerate", "8", "-i", str(dense / "%03d.jpg"),
+        "-i", str(dense_palette), "-lavfi", "paletteuse=dither=bayer:bayer_scale=3", "-loop", "0",
+        str(OUT / "density.gif"),
+    ], check=True)
+    print(f"wrote {OUT} ({len(seq)} inflow frames, {count} density frames)")
 
 
 if __name__ == "__main__":

@@ -3,6 +3,87 @@
   "height": 1920,
   "styles": [
     {
+      "id": "density",
+      "name": "稿里的信息",
+      "use": "把口播稿里一句带过、画面上没有的信息逐条列出来。",
+      "place": "人仍在上面。下沿八条：人物、学校、地点、动作、平台、数量、两个条目。",
+      "move": "每一条单独拖，用来补画面的信息密度。",
+      "layers": [
+        {
+          "id": "who",
+          "name": "人物",
+          "src": "sprites/density-who.png",
+          "x": 48,
+          "y": 1296,
+          "w": 480,
+          "h": 112
+        },
+        {
+          "id": "school",
+          "name": "学校",
+          "src": "sprites/density-school.png",
+          "x": 552,
+          "y": 1296,
+          "w": 480,
+          "h": 112
+        },
+        {
+          "id": "place",
+          "name": "地点",
+          "src": "sprites/density-place.png",
+          "x": 48,
+          "y": 1424,
+          "w": 480,
+          "h": 112
+        },
+        {
+          "id": "act",
+          "name": "动作",
+          "src": "sprites/density-act.png",
+          "x": 552,
+          "y": 1424,
+          "w": 480,
+          "h": 112
+        },
+        {
+          "id": "site",
+          "name": "平台",
+          "src": "sprites/density-site.png",
+          "x": 48,
+          "y": 1552,
+          "w": 480,
+          "h": 112
+        },
+        {
+          "id": "count",
+          "name": "数量",
+          "src": "sprites/density-count.png",
+          "x": 552,
+          "y": 1552,
+          "w": 480,
+          "h": 112
+        },
+        {
+          "id": "one",
+          "name": "条目",
+          "src": "sprites/density-one.png",
+          "x": 48,
+          "y": 1680,
+          "w": 480,
+          "h": 112
+        },
+        {
+          "id": "two",
+          "name": "条目",
+          "src": "sprites/density-two.png",
+          "x": 552,
+          "y": 1680,
+          "w": 480,
+          "h": 112
+        }
+      ]
+    },
+    {
       "id": "person",
       "name": "人物介绍",
       "use": "开口报名字的时候用。",
@@ -11,6 +92,7 @@
       "layers": [
         {
           "id": "text",
+          "name": "文字",
           "src": "sprites/person-text.png",
           "x": 72,
           "y": 1327,
@@ -28,6 +110,7 @@
       "layers": [
         {
           "id": "text",
+          "name": "文字",
           "src": "sprites/text-text.png",
           "x": 73,
           "y": 1317,
@@ -45,6 +128,7 @@
       "layers": [
         {
           "id": "text",
+          "name": "文字",
           "src": "sprites/inflow-text.png",
           "x": 74,
           "y": 1368,
@@ -53,6 +137,7 @@
         },
         {
           "id": "picture",
+          "name": "竖图",
           "src": "sprites/inflow-picture.png",
           "x": 590,
           "y": 1280,
@@ -70,6 +155,7 @@
       "layers": [
         {
           "id": "text",
+          "name": "文字",
           "src": "sprites/points-text.png",
           "x": 72,
           "y": 1295,
@@ -87,6 +173,7 @@
       "layers": [
         {
           "id": "text",
+          "name": "文字",
           "src": "sprites/quote-text.png",
           "x": 73,
           "y": 1327,
